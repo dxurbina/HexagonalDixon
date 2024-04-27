@@ -1,0 +1,34 @@
+version: "3.4"
+networks:
+  hexagonal-network:
+    driver: bridge
+
+services:
+  db:
+    container_name: app-db
+    image: mcr.microsoft.com/mssql/server:latest
+    ports:
+      - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Admin123*
+    networks:
+      - hexagonal-network
+  hexagonal:
+    image: hexagonal
+    container_name: hexagonal-app
+    ports:
+      - 5000:80
+      - 4040:443
+    build:
+      context: .
+      dockerfile: Hexagonal/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=Hexagonal
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - DB_SA_PASSWORD=Admin123*
+    networks:
+      - hexagonal-network
